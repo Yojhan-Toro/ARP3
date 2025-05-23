@@ -1,0 +1,53 @@
+import React, { useState, useEffect } from 'react';
+
+function App() {
+  const [texto, setTexto] = useState('');
+  const [opcion, setOpcion] = useState('');
+  const [mensaje, setMensaje] = useState('');
+
+  useEffect(() => {
+    const stored = localStorage.getItem('formData');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      setTexto(parsed.texto || '');
+      setOpcion(parsed.opcion || '');
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('formData', JSON.stringify({ texto, opcion }));
+  }, [texto, opcion]);
+
+  const enviarDatos = async () => {
+    try {
+      const res = await fetch('http://localhost:3001/api/datos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto, opcion })
+      });
+      setMensaje(res.ok ? 'Enviado ✅' : 'Error ❌');
+    } catch {
+      setMensaje('Fallo de red ❌');
+    }
+  };
+
+  return (
+    <div>
+      <input
+        value={texto}
+        onChange={e => setTexto(e.target.value)}
+        placeholder="Texto"
+      />
+      <select value={opcion} onChange={e => setOpcion(e.target.value)}>
+        <option value="">-- opción --</option>
+        <option value="opcion1">Opción 1</option>
+        <option value="opcion2">Opción 2</option>
+        <option value="opcion3">Opción 3</option>
+      </select>
+      <button onClick={enviarDatos}>Enviar</button>
+      <div>{mensaje}</div>
+    </div>
+  );
+}
+
+export default App;
